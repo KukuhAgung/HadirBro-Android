@@ -1,11 +1,12 @@
 import { useNavigation } from "@react-navigation/native";
-import React, { useEffect } from "react";
+import React from "react";
 import { View, Text, Image, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AbsenScreen() {
   const navigation = useNavigation();
   const [isCheck, setIsCheck] = React.useState(false);
+  const [data, setData] = React.useState("");
   const [hadir, setHadir] = React.useState(false);
   const [izin, setIzin] = React.useState(false);
   const [alpha, setAlpha] = React.useState(false);
@@ -14,10 +15,16 @@ export default function AbsenScreen() {
     setHadir(id === "hadir");
     setIzin(id === "izin");
     setAlpha(id === "alpha");
+    setData(id);
   };
 
   const handleAbsen = () => {
-    setIsCheck(true);
+    if (data !== "") {
+      setIsCheck(true);
+      Alert.alert("Success!", "Ananda hadir dengan keterangan " + data);
+    } else {
+      return Alert.alert("Error!", "Silahkan pilih keterangan");
+    }
   };
 
   return (
@@ -36,7 +43,10 @@ export default function AbsenScreen() {
             </Text>
             <Text className="text-xs text-white mt-1">NIS : 541221003</Text>
           </View>
-          <TouchableOpacity className="px-3 py-2 bg-secondary rounded-md mt-5 border border-secondary cursor-pointer w-[135px]">
+          <TouchableOpacity
+            className="px-3 py-2 bg-secondary rounded-md mt-5 border border-secondary cursor-pointer w-[135px]"
+            onPress={() => navigation.navigate("Student")}
+          >
             <Text className="text-white text-xs text-left border-bordersecondary">
               Cek Data Kehadiran
             </Text>
@@ -111,10 +121,17 @@ export default function AbsenScreen() {
           </TouchableOpacity>
         </View>
         <TouchableOpacity
-          className="px-10 py-3 bg-primary rounded-md mt-8 border border-primaryvariant cursor-pointer"
+          className={
+            isCheck
+              ? "px-10 py-3 bg-gray-600 rounded-md mt-8 border border-gray-700 cursor-pointer"
+              : "px-10 py-3 bg-primary rounded-md mt-8 border border-primaryvariant cursor-pointer"
+          }
+          disabled={isCheck}
           onPress={handleAbsen}
         >
-          <Text className="text-white">Submit</Text>
+          <Text className={isCheck ? "text-gray-400" : "text-white"}>
+            Submit
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

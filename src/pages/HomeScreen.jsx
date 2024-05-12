@@ -54,7 +54,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
       <ScrollView scrollsToTop={true} className="flex-1 gap-y-6 z-1">
-        <Text className="px-2 py-6 bg-primaryvariant text-white ">
+        <Text className="px-2 py-4 bg-primaryvariant text-white ">
           Daftar Kelas
         </Text>
         {data.map((item) => (

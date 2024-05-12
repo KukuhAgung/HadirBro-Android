@@ -21,7 +21,7 @@ export default function LoginScreen() {
 
   const navigation = useNavigation();
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (username == "Aurel" && password == "123456" && kodePelajaran == "A07") {
       setNameError(false);
       setPasswordError(false);
@@ -29,10 +29,10 @@ export default function LoginScreen() {
       return navigation.navigate("Home");
     } else if (username != "Aurel") {
       setNameError(true);
-    } else if (password != "123456") {
-      setPasswordError(true);
     } else if (kodePelajaran != "A07") {
       setKodePelajaranError(true);
+    } else if (password != "123456") {
+      setPasswordError(true);
     } else {
       return alert("Login Gagal");
     }

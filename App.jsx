@@ -6,6 +6,7 @@ import HomeScreen from "./src/pages/HomeScreen";
 import LoginScreen from "./src/pages/LoginScreen";
 import KelasScreen from "./src/pages/KelasScreen";
 import AbsenScreen from "./src/pages/AbsenScreen";
+import MuridScreen from "./src/pages/MuridScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -29,6 +30,7 @@ function App() {
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Kelas" component={KelasScreen} />
         <Stack.Screen name="Absen" component={AbsenScreen} />
+        <Stack.Screen name="Student" component={MuridScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
