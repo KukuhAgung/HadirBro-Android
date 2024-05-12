@@ -8,11 +8,14 @@ module.exports = {
         secondary: "#FCBE45",
         primaryvariant: "#305DC1",
         bordersecondary: "#CD9832",
+        check1: "#3FD945",
+        check2: "#FCBE45",
+        check3: "#FC5050",
       },
       fontFamily: {
         roboto: ["Roboto", "sans-serif"],
       },
     },
   },
-  plugins: [require("daisyui")],
+  plugins: [],
 };
