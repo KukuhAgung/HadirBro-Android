@@ -12,11 +12,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { FIREBASE_AUTH } from "./data/FirebaseConfig";
 import { signInWithEmailAndPassword } from "firebase/auth/cordova";
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function LoginScreen() {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
-  const [nameError, setNameError] = React.useState(false);
+  const [emailError, setEmailError] = React.useState(false);
   const [passwordError, setPasswordError] = React.useState(false);
   const auth = FIREBASE_AUTH;
   const navigation = useNavigation();
@@ -25,15 +26,18 @@ export default function LoginScreen() {
     try {
       const response = await signInWithEmailAndPassword(auth, email, password);
       alert("sign in success");
-      setNameError(false);
+      setEmailError(false);
       setPasswordError(false);
+      navigation.navigate("Home");
     } catch (error) {
-      console.log(error);
-      alert("Sign in failed:" + error.message);
-      setNameError(false);
-      setPasswordError(false);
-    } finally {
-      alert("Sign in failed");
+      alert("sign in failed" + error.message);
+      if (email != user.email) {
+        setEmailError(true);
+        setPasswordError;
+      } else if (password != user.password) {
+        setPasswordError(true);
+        setEmailError(false);
+      }
     }
   };
 
@@ -46,7 +50,7 @@ export default function LoginScreen() {
       />
 
       <View className="w-[70%]">
-        <Text className="text-[28px] text-primary font-bold">Welcome</Text>
+        <Text className="text-[28px] text-primary font-bold mb-1">Welcome</Text>
         <Text className="text-[16px] text-primary font-bold">
           HadirBro! Makes Fast and On Time
         </Text>
@@ -56,32 +60,32 @@ export default function LoginScreen() {
         behavior="padding"
         className="w-[90%] items-center flex mt-6"
       >
-        {nameError ? (
+        {emailError ? (
           <>
             <View
               className={`relative flex flex-row gap-x-4 items-center border border-red-600 rounded-md border-opacity-25 w-[80%] py-3 mt-3`}
             >
-              <FontAwesome name="user" size={24} color="gray" />
+              <FontAwesome name="inbox" size={22} color="gray" />
               <TextInput
-                placeholder="Username"
+                placeholder="Email"
                 placeholderTextColor="red"
                 autoFocus={true}
-                onChangeText={(text) => setUsername(text)}
-                onPressIn={() => setNameError(false)}
+                onChangeText={(text) => setEmail(text)}
+                onPressIn={() => setEmailError(false)}
                 className={`border-b w-[70%] pb-2 border-red-600`}
               ></TextInput>
             </View>
             <Text className="text-red-600 text-xs text-left w-full mt-1 ml-20">
-              *Username salah, coba lagi!
+              *Email salah, coba lagi!
             </Text>
           </>
         ) : (
           <View
             className={`flex flex-row gap-x-4 items-center border border-gray-700 rounded-md border-opacity-25 w-[80%] py-3 mt-3`}
           >
-            <FontAwesome name="user" size={24} color="gray" />
+            <FontAwesome name="inbox" size={22} color="gray" />
             <TextInput
-              placeholder="Username"
+              placeholder="Email"
               autoFocus={true}
               onChangeText={(text) => setEmail(text)}
               className={`border-b w-[70%] pb-2 border-gray-700`}

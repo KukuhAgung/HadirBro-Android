@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Text,
   View,
@@ -10,9 +10,18 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { data } from "./data/data";
 import { useNavigation } from "@react-navigation/native";
+import { FIREBASE_AUTH } from "./data/FirebaseConfig";
 
 export default function HomeScreen() {
+  const [username, setUsername] = React.useState("");
   const navigation = useNavigation();
+  const user = FIREBASE_AUTH.currentUser;
+
+  useEffect(() => {
+    if (user) {
+      setUsername(user.email.trim().split("@")[0]);
+    }
+  }, []);
   const handleLogOut = () => {
     Alert.alert("Success!", "Are you sure you want to log out?", [
       {
@@ -21,6 +30,7 @@ export default function HomeScreen() {
       {
         text: "Yes",
         onPress: () => {
+          FIREBASE_AUTH.signOut();
           navigation.navigate("Login");
           Alert.alert("Success!", "Log Out Success!");
         },
@@ -38,7 +48,7 @@ export default function HomeScreen() {
           className="w-[70px] h-[70px] rounded-full"
         />
         <View className="flex flex-col gap-y-2">
-          <Text className="text-white text-sm">Aurel, S.Pd.</Text>
+          <Text className="text-white text-sm">{username}, S.Pd.</Text>
           <View>
             <Text className="text-white text-xs">Kode guru : A07</Text>
             <Text className="text-white text-xs">
@@ -62,7 +72,7 @@ export default function HomeScreen() {
             key={item.kelas}
             className="flex flex-row gap-x-5 items-center px-2"
             onPress={handleKelas}
-          >                                                                                               
+          >
             <Image
               source={require("./image/logo.png")}
               className="w-[60px] h-[60px] rounded-full bg-gray-600"

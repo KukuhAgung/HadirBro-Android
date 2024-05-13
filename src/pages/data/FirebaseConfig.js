@@ -3,15 +3,14 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDLIdA6cGR0t3h6YHhe0c_jK9qCAF6u-sA",
-  authDomain: "hadirbro-af5e2.firebaseapp.com",
-  projectId: "hadirbro-af5e2",
-  storageBucket: "hadirbro-af5e2.appspot.com",
-  messagingSenderId: "853743232968",
-  appId: "1:853743232968:web:1ecfc121631a46e66442fd",
-  measurementId: "G-GDLKQVHFBN",
+  apiKey: process.env.EXPO_PUBLIC_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_PROJECTID,
+  storageBucket: process.env.EXPO_PUBLIC_STORAGE,
+  messagingSenderId: process.env.EXPO_PUBLIC_MESSAGE,
+  appId: process.env.EXPO_PUBLIC_APP_ID,
+  measurementId: process.env.EXPO_PUBLIC_MEASUREMENT,
 };
-
 
 export const FIREBASE_APP = initializeApp(firebaseConfig);
 export const FIREBASE_AUTH = getAuth(FIREBASE_APP);
