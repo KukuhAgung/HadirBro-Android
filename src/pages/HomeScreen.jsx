@@ -13,7 +13,7 @@ import { useNavigation } from "@react-navigation/native";
 
 export default function HomeScreen() {
   const navigation = useNavigation();
-  const handleLogOut = async () => {
+  const handleLogOut = () => {
     Alert.alert("Success!", "Are you sure you want to log out?", [
       {
         text: "Cancel",
@@ -62,7 +62,7 @@ export default function HomeScreen() {
             key={item.kelas}
             className="flex flex-row gap-x-5 items-center px-2"
             onPress={handleKelas}
-          >
+          >                                                                                               
             <Image
               source={require("./image/logo.png")}
               className="w-[60px] h-[60px] rounded-full bg-gray-600"

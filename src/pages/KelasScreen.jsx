@@ -10,7 +10,6 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { siswa } from "./data/data";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 
 export default function KelasScreen() {
   const navigation = useNavigation();

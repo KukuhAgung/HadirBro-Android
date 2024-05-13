@@ -10,44 +10,51 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { FIREBASE_AUTH } from "./data/FirebaseConfig";
+import { signInWithEmailAndPassword } from "firebase/auth/cordova";
 
 export default function LoginScreen() {
-  const [username, setUsername] = React.useState("");
+  const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
-  const [kodePelajaran, setKodePelajaran] = React.useState("");
   const [nameError, setNameError] = React.useState(false);
   const [passwordError, setPasswordError] = React.useState(false);
-  const [kodePelajaranError, setKodePelajaranError] = React.useState(false);
-
+  const auth = FIREBASE_AUTH;
   const navigation = useNavigation();
 
-  const handleLogin = async () => {
-    if (username == "Aurel" && password == "123456" && kodePelajaran == "A07") {
+  const SignIn = async () => {
+    try {
+      const response = await signInWithEmailAndPassword(auth, email, password);
+      alert("sign in success");
       setNameError(false);
       setPasswordError(false);
-      setKodePelajaranError(false);
-      return navigation.navigate("Home");
-    } else if (username != "Aurel") {
-      setNameError(true);
-    } else if (kodePelajaran != "A07") {
-      setKodePelajaranError(true);
-    } else if (password != "123456") {
-      setPasswordError(true);
-    } else {
-      return alert("Login Gagal");
+    } catch (error) {
+      console.log(error);
+      alert("Sign in failed:" + error.message);
+      setNameError(false);
+      setPasswordError(false);
+    } finally {
+      alert("Sign in failed");
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 justify-center items-center">
+    <SafeAreaView className="flex-1 items-center bg-white mt-20">
       <Image
-        className="w-[300px] h-[110px] mb-10"
-        source={require("./image/logo.png")}
+        className="w-[300px] h-[180px] mb-5"
+        resizeMode="cover"
+        source={require("./image/splash.png")}
       />
+
+      <View className="w-[70%]">
+        <Text className="text-[28px] text-primary font-bold">Welcome</Text>
+        <Text className="text-[16px] text-primary font-bold">
+          HadirBro! Makes Fast and On Time
+        </Text>
+      </View>
 
       <KeyboardAvoidingView
         behavior="padding"
-        className="w-[90%] items-center flex"
+        className="w-[90%] items-center flex mt-6"
       >
         {nameError ? (
           <>
@@ -76,39 +83,7 @@ export default function LoginScreen() {
             <TextInput
               placeholder="Username"
               autoFocus={true}
-              onChangeText={(text) => setUsername(text)}
-              className={`border-b w-[70%] pb-2 border-gray-700`}
-            ></TextInput>
-          </View>
-        )}
-
-        {kodePelajaranError ? (
-          <>
-            <View
-              className={`flex flex-row gap-x-4 items-center border border-red-600 rounded-md border-opacity-25 w-[80%] py-3 mt-3`}
-            >
-              <FontAwesome name="book" size={24} color="gray" />
-              <TextInput
-                placeholder="Kode Mata Pelajaran"
-                placeholderTextColor="red"
-                autoFocus={true}
-                onChangeText={(text) => setKodePelajaran(text)}
-                onPressIn={() => setKodePelajaranError(false)}
-                className={`border-b w-[70%] pb-2 border-red-600`}
-              ></TextInput>
-            </View>
-            <Text className="text-red-600 text-xs text-left w-full mt-1 ml-20">
-              *Kode Mapel salah, coba lagi!
-            </Text>
-          </>
-        ) : (
-          <View
-            className={`flex flex-row gap-x-4 items-center border border-gray-700 rounded-md border-opacity-25 w-[80%] py-3 mt-3`}
-          >
-            <FontAwesome name="book" size={24} color="gray" />
-            <TextInput
-              placeholder="Kode Mata Pelajaran"
-              onChangeText={(text) => setKodePelajaran(text)}
+              onChangeText={(text) => setEmail(text)}
               className={`border-b w-[70%] pb-2 border-gray-700`}
             ></TextInput>
           </View>
@@ -119,7 +94,7 @@ export default function LoginScreen() {
             <View
               className={`flex flex-row gap-x-4 items-center border border-red-600 rounded-md border-opacity-25 w-[80%] py-3 mt-3`}
             >
-              <FontAwesome name="key" size={24} color="gray" />
+              <FontAwesome name="key" size={20} color="gray" />
               <TextInput
                 placeholder="Password"
                 placeholderTextColor="red"
@@ -138,7 +113,7 @@ export default function LoginScreen() {
           <View
             className={`flex flex-row gap-x-4 items-center border border-gray-700 rounded-md border-opacity-25 w-[80%] py-3 mt-3`}
           >
-            <FontAwesome name="key" size={24} color="gray" />
+            <FontAwesome name="key" size={20} color="gray" />
             <TextInput
               placeholder="Password"
               onChangeText={(text) => setPassword(text)}
@@ -150,8 +125,8 @@ export default function LoginScreen() {
       </KeyboardAvoidingView>
 
       <TouchableOpacity
-        className="px-10 py-3 bg-secondary rounded-md mt-5 border border-secondary cursor-pointer"
-        onPress={handleLogin}
+        className="px-10 py-2 bg-secondary rounded-lg mt-5 border border-secondary cursor-pointer"
+        onPress={SignIn}
       >
         <Text className="text-white">Log In</Text>
       </TouchableOpacity>
