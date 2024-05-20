@@ -42,14 +42,14 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 items-center bg-white mt-20">
+    <SafeAreaView className="flex-1 items-center justify-center bg-white">
       <Image
-        className="w-[300px] h-[180px] mb-5"
+        className="w-[350px] h-[250px] mb-5"
         resizeMode="cover"
         source={require("./image/splash.png")}
       />
 
-      <View className="w-[70%]">
+      <View className="w-[74%]">
         <Text className="text-[28px] text-primary font-bold mb-1">Welcome</Text>
         <Text className="text-[16px] text-primary font-bold">
           HadirBro! Makes Fast and On Time

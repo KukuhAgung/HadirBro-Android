@@ -1,11 +1,47 @@
-import { useNavigation } from "@react-navigation/native";
 import React from "react";
-import { Text, TouchableOpacity, View, Image, ScrollView } from "react-native";
+import {
+  Text,
+  TouchableOpacity,
+  View,
+  Image,
+  ScrollView,
+  Alert,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { FIRESTORE_DB } from "./data/FirebaseConfig";
 
 export default function MuridScreen() {
+  const [data, setData] = React.useState({});
+  const route = useRoute();
+  const { student } = route.params;
   const navigation = useNavigation();
+
+  const fetchAttendance = async () => {
+    try {
+      const studentQuery = query(
+        collection(FIRESTORE_DB, "student"),
+        where("name", "==", student.name)
+      );
+      const querySnapshot = await getDocs(studentQuery);
+      if (!querySnapshot.empty) {
+        const studentDoc = querySnapshot.docs[0];
+        const studentData = { ...studentDoc.data(), id: studentDoc.id };
+        setData(studentData);
+      } else {
+        Alert.alert("Error", "Data siswa tidak ditemukan.");
+      }
+    } catch (error) {
+      console.error("Error fetching student data:", error);
+      Alert.alert("Error", "Failed to retrieve student ID.");
+    }
+  };
+
+  React.useEffect(() => {
+    fetchAttendance();
+  }, []);
 
   return (
     <SafeAreaView className="flex-1">
@@ -17,29 +53,31 @@ export default function MuridScreen() {
           <Image source={require("./image/Arrow 1.png")} />
         </TouchableOpacity>
         <View className="flex items-center">
-          <Text className="text-[16px] text-white">
-            Abidah Ardelia Kendra Wibowo
-          </Text>
-          <Text className="text-xs text-white mt-2">NIS : 541221003</Text>
+          <Text className="text-[16px] text-white">{student.name}</Text>
+          <Text className="text-xs text-white mt-2">NIS : {student.nis}</Text>
         </View>
       </View>
-      <Text className="px-2 py-4 bg-primary text-white ">Data Kehadiran</Text>
+      <Text className="px-2 py-4 bg-primary text-white">Data Kehadiran</Text>
 
       <View className="flex bg-blue-50 w-fit h-[110px] p-5 my-7 mx-2 border border-primaryvariant rounded-md">
         <Text className="text-[14px] text-left mb-5">Total Kehadiran</Text>
         <View className="flex flex-row gap-x-4">
           <View className="flex flex-row">
             <FontAwesome name="circle" color={"#3FD945"} size={16} />
-            <Text className="text-xs text-left mx-2">Hadir: 3</Text>
+            <Text className="text-xs text-left mx-2">
+              Hadir: {data.hadir || 0}
+            </Text>
           </View>
           <View className="flex flex-row">
             <FontAwesome name="circle" color={"#FCBE45"} size={16} />
-            <Text className="text-xs text-left mx-2">Izin: 1</Text>
+            <Text className="text-xs text-left mx-2">
+              Izin: {data.izin || 0}
+            </Text>
           </View>
           <View className="flex flex-row">
             <FontAwesome name="circle" color={"#FC5050"} size={16} />
             <Text className="text-xs text-left mx-2">
-              Alpha/Tanpa Keterangan: 1
+              Alpha/Tanpa Keterangan: {data.alpha || 0}
             </Text>
           </View>
         </View>
