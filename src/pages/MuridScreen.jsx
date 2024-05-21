@@ -6,36 +6,79 @@ import {
   Image,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { FIRESTORE_DB } from "./data/FirebaseConfig";
+import { Card } from "../component/Card";
+import { useStudent } from "../store";
 
 export default function MuridScreen() {
   const [data, setData] = React.useState({});
-  const route = useRoute();
-  const { student } = route.params;
+  const [attendance, setAttendance] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const { student } = useStudent();
+  const db = FIRESTORE_DB;
   const navigation = useNavigation();
 
   const fetchAttendance = async () => {
     try {
       const studentQuery = query(
-        collection(FIRESTORE_DB, "student"),
+        collection(db, "student"),
         where("name", "==", student.name)
       );
-      const querySnapshot = await getDocs(studentQuery);
-      if (!querySnapshot.empty) {
-        const studentDoc = querySnapshot.docs[0];
+      const attendanceQuery = query(
+        collection(db, "attendance5"),
+        where("name", "==", student.name)
+      );
+      const studentSnapshot = await getDocs(studentQuery);
+      const attendanceSnapshot = await getDocs(attendanceQuery);
+      if (!studentSnapshot.empty || !attendanceSnapshot.empty) {
+        const attendances = [];
+        attendanceSnapshot.forEach((doc) => {
+          attendances.push({ ...doc.data(), id: doc.id });
+        });
+        setAttendance(attendances);
+        const studentDoc = studentSnapshot.docs[0];
         const studentData = { ...studentDoc.data(), id: studentDoc.id };
         setData(studentData);
       } else {
         Alert.alert("Error", "Data siswa tidak ditemukan.");
       }
     } catch (error) {
-      console.error("Error fetching student data:", error);
-      Alert.alert("Error", "Failed to retrieve student ID.");
+      Alert.alert("Error", "Gagal untuk mengambil data siswa.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const formatDate = (timestamp) => {
+    const date = timestamp.toDate();
+    return date.toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Hadir":
+        return "#3FD945";
+      case "Izin":
+        return "#FCBE45";
+      case "Alpha":
+        return "#FC5050";
+      default:
+        return "#000000";
     }
   };
 
@@ -65,62 +108,42 @@ export default function MuridScreen() {
           <View className="flex flex-row">
             <FontAwesome name="circle" color={"#3FD945"} size={16} />
             <Text className="text-xs text-left mx-2">
-              Hadir: {data.hadir || 0}
+              Hadir: {data.Hadir || 0}
             </Text>
           </View>
           <View className="flex flex-row">
             <FontAwesome name="circle" color={"#FCBE45"} size={16} />
             <Text className="text-xs text-left mx-2">
-              Izin: {data.izin || 0}
+              Izin: {data.Izin || 0}
             </Text>
           </View>
           <View className="flex flex-row">
             <FontAwesome name="circle" color={"#FC5050"} size={16} />
             <Text className="text-xs text-left mx-2">
-              Alpha/Tanpa Keterangan: {data.alpha || 0}
+              Alpha/Tanpa Keterangan: {data.Alpha || 0}
             </Text>
           </View>
         </View>
       </View>
 
-      <ScrollView
-        scrollsToTop={true}
-        className="flex-1 gap-y-6 z-1 w-[98%] mx-auto"
-      >
-        <View className="flex flex-row gap-x-5 items-center px-2">
-          <FontAwesome name="circle" color={"#3FD945"} size={45} />
-          <View className="">
-            <Text className="text-sm font-medium">Hadir</Text>
-            <Text className="text-xs">yy/mm/dd</Text>
-          </View>
-          <View className="absolute flex flex-row gap-x-5 right-3">
-            <FontAwesome name="pencil" color={"gray"} size={20} />
-            <FontAwesome name="trash" color={"gray"} size={20} />
-          </View>
-        </View>
-        <View className="flex flex-row gap-x-5 items-center px-2">
-          <FontAwesome name="circle" color={"#FCBE45"} size={45} />
-          <View className="">
-            <Text className="text-sm font-medium">Izin</Text>
-            <Text className="text-xs">yy/mm/dd</Text>
-          </View>
-          <View className="absolute flex flex-row gap-x-5 right-3">
-            <FontAwesome name="pencil" color={"gray"} size={20} />
-            <FontAwesome name="trash" color={"gray"} size={20} />
-          </View>
-        </View>
-        <View className="flex flex-row gap-x-5 items-center px-2">
-          <FontAwesome name="circle" color={"#FC5050"} size={45} />
-          <View className="">
-            <Text className="text-sm font-medium">Alpha</Text>
-            <Text className="text-xs">yy/mm/dd</Text>
-          </View>
-          <View className="absolute flex flex-row gap-x-5 right-3">
-            <FontAwesome name="pencil" color={"gray"} size={20} />
-            <FontAwesome name="trash" color={"gray"} size={20} />
-          </View>
-        </View>
-      </ScrollView>
+      {isLoading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        <ScrollView
+          scrollsToTop={true}
+          className="flex-1 gap-y-1 z-1 w-[98%] mx-auto"
+        >
+          {attendance.map((item) => (
+            <Card
+              id={student.id}
+              key={item.id}
+              color={getStatusColor(item.thisday[0])}
+              attendance={item.thisday[0]}
+              date={formatDate(item.thisday[1])}
+            />
+          ))}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }

@@ -23,7 +23,7 @@ function App() {
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{ headerShown: false }}
-        initialRouteName={"Home"}
+        initialRouteName={"Splash"}
       >
         {isLoading ? (
           <Stack.Screen name="Splash" component={SplashScreen} />

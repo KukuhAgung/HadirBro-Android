@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Text,
   TouchableOpacity,
@@ -6,18 +6,42 @@ import {
   Image,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FIRESTORE_DB } from "./data/FirebaseConfig";
 import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
+import { useStudent } from "../store";
 
 export default function KelasScreen() {
-  const [students, setStudents] = useState([]);
+  const {setStudent} = useStudent();
+  const [students, setStudents] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
   const navigation = useNavigation();
   const db = FIRESTORE_DB;
 
-  useEffect(() => {
+  const handleSiswa = async (studentName) => {
+    try {
+      const studentQuery = query(
+        collection(db, "student"),
+        where("name", "==", studentName)
+      );
+      const querySnapshot = await getDocs(studentQuery);
+      if (!querySnapshot.empty) {
+        const studentDoc = querySnapshot.docs[0];
+        const studentData = { ...studentDoc.data(), id: studentDoc.id };
+        setStudent(studentData);
+        navigation.navigate("Absen");
+      } else {
+        Alert.alert("Error", "Data siswa tidak ditemukan.");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Gagal untuk menemukan data siswa.");
+    }
+  };
+
+  React.useEffect(() => {
     const fetchStudents = async () => {
       try {
         const studentsQuery = query(
@@ -32,31 +56,13 @@ export default function KelasScreen() {
         setStudents(students);
       } catch (error) {
         console.error("Error fetching students: ", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchStudents();
   }, []);
-
-  const handleSiswa = async (studentName) => {
-    try {
-      const studentQuery = query(
-        collection(db, "student"),
-        where("name", "==", studentName)
-      );
-      const querySnapshot = await getDocs(studentQuery);
-      if (!querySnapshot.empty) {
-        const studentDoc = querySnapshot.docs[0];
-        const studentData = { ...studentDoc.data(), id: studentDoc.id };
-        navigation.navigate("Absen", { student: studentData });
-      } else {
-        Alert.alert("Error", "Student not found.");
-      }
-    } catch (error) {
-      console.error("Error fetching student ID: ", error);
-      Alert.alert("Error", "Failed to retrieve student ID.");
-    }
-  };
 
   return (
     <SafeAreaView className="flex-1">
@@ -74,24 +80,30 @@ export default function KelasScreen() {
           </Text>
         </View>
       </View>
-      <ScrollView scrollsToTop={true} className="flex-1 gap-y-6 z-1">
+      <ScrollView scrollsToTop={true} className="flex-1 gap-y-1 z-1">
         <Text className="px-2 py-4 bg-primary text-white">Daftar Siswa</Text>
-        {students.map((item) => (
-          <TouchableOpacity
-            key={item.id}
-            className="flex flex-row gap-x-5 items-center px-2"
-            onPress={() => handleSiswa(item.name)}
-          >
-            <Image
-              source={require("./image/profile.png")}
-              className="w-[60px] h-[60px] rounded-full bg-gray-600"
-            />
-            <View className="gap-y-2">
-              <Text className="text-sm font-medium">{item.name}</Text>
-              <Text className="text-xs">NIS : {item.nis}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+        {loading ? (
+          <ActivityIndicator size="extralarge" color="#0000ff" />
+        ) : (
+          <View className="flex gap-y-3">
+            {students.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                className="flex flex-row gap-x-5 items-center px-2"
+                onPress={() => handleSiswa(item.name)}
+              >
+                <Image
+                  source={require("./image/profile.png")}
+                  className="w-[60px] h-[60px] rounded-full bg-gray-600"
+                />
+                <View className="gap-y-2">
+                  <Text className="text-sm font-medium">{item.name}</Text>
+                  <Text className="text-xs">NIS : {item.nis}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
