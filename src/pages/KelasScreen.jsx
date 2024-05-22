@@ -15,7 +15,7 @@ import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import { useStudent } from "../store";
 
 export default function KelasScreen() {
-  const {setStudent} = useStudent();
+  const { setStudent } = useStudent();
   const [students, setStudents] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const navigation = useNavigation();
@@ -41,27 +41,29 @@ export default function KelasScreen() {
     }
   };
 
-  React.useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        const studentsQuery = query(
-          collection(db, "student"),
-          orderBy("name", "asc")
-        );
-        const querySnapshot = await getDocs(studentsQuery);
-        const students = [];
-        querySnapshot.forEach((doc) => {
-          students.push({ ...doc.data(), id: doc.id });
-        });
-        setStudents(students);
-      } catch (error) {
-        console.error("Error fetching students: ", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchStudents = async () => {
+    try {
+      const studentsQuery = query(
+        collection(db, "student"),
+        orderBy("name", "asc")
+      );
+      const querySnapshot = await getDocs(studentsQuery);
+      const students = [];
+      querySnapshot.forEach((doc) => {
+        students.push({ ...doc.data(), id: doc.id });
+      });
+      setStudents(students);
+    } catch (error) {
+      setLoading(false);
+    }
+  };
 
-    fetchStudents();
+  React.useEffect(() => {
+    setLoading(true);
+    setTimeout(() => {
+      fetchStudents();
+      setLoading(false);
+    }, 2000);
   }, []);
 
   return (

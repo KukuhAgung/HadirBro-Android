@@ -37,21 +37,20 @@ export default function HomeScreen() {
       setKelas(classes);
       setLoading(false);
     } catch (error) {
-      Alert.alert("Error fetching classes: ", error);
       setLoading(false);
     }
   };
   const handleLogOut = () => {
-    Alert.alert("Success!", "Are you sure you want to log out?", [
+    Alert.alert("Peringatan", "Apakah anda yakin ingin log out?", [
       {
-        text: "Cancel",
+        text: "Batal",
       },
       {
-        text: "Yes",
+        text: "LogOut",
         onPress: () => {
           FIREBASE_AUTH.signOut();
           navigation.navigate("Login");
-          Alert.alert("Success!", "Log Out Success!");
+          Alert.alert("Sukses", "Log Out Berhasil!");
         },
       },
     ]);

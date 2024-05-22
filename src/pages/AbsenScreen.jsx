@@ -19,22 +19,32 @@ import {
   getDocs,
   Timestamp,
   collection,
+  addDoc,
 } from "firebase/firestore";
 import { FIRESTORE_DB } from "./data/FirebaseConfig";
-import { useCheck, useData, useStudent } from "../store";
+import {
+  useCheck,
+  useData,
+  useEdit,
+  useStudent,
+  useId,
+  usePrevData,
+} from "../store";
 
 export default function AbsenScreen() {
   const navigation = useNavigation();
   const { isCheck, setIsCheck } = useCheck();
   const { data, setData } = useData();
+  const { isId } = useId();
   const [hadir, setHadir] = React.useState(false);
   const [izin, setIzin] = React.useState(false);
   const [alpha, setAlpha] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const db = FIRESTORE_DB;
+  const { prevData } = usePrevData();
+  const { isEdit, setIsEdit } = useEdit();
   const { student } = useStudent();
   const date = Timestamp.now().toDate();
-  const docData = { name: student.name, thisday: [data, date] };
 
   const checkTodayAttendance = async () => {
     try {
@@ -79,23 +89,59 @@ export default function AbsenScreen() {
   const handleAbsen = async () => {
     try {
       if (!student.id) {
-        Alert.alert("Id siswa tidak ditemukan.");
+        Alert.alert("ID siswa tidak ditemukan.");
         return;
       }
 
-      const studentDocRef = doc(db, "student", student.id);
-      const studentDoc = await getDoc(studentDocRef);
-      const currentData = studentDoc.data()[data];
-      const newValue = (currentData || 0) + 1;
+      if (isEdit) {
+        const attendanceDocRef = doc(db, "attendance5", isId);
+        const studentDocRef = doc(db, "student", student.id);
+        const attendanceDoc = await getDoc(attendanceDocRef);
+        const studentDoc = await getDoc(studentDocRef);
+        const currentData = studentDoc.data()[data];
+        const prevValue = currentData > 0 ? currentData - 1 : 0;
+        const newValue = (currentData || 0) + 1;
 
-      await updateDoc(studentDocRef, {
-        [data]: newValue,
-      });
-      await setDoc(doc(db, "attendance5", student.id), docData);
-      setIsCheck(true);
-      Alert.alert("Sukses", "Ananda hadir dengan keterangan " + data);
+        const attendanceData = attendanceDoc.data();
+        if (attendanceData.thisday[0] == data) {
+          Alert.alert("Sukses", "Data absen berhasil diubah.");
+          setIsCheck(true);
+        } else {
+          await updateDoc(studentDocRef, {
+            [prevData]: prevValue,
+          });
+          if (updateDoc) {
+            await updateDoc(studentDocRef, {
+              [data]: newValue,
+            });
+            await setDoc(attendanceDocRef, {
+              name: student.name,
+              thisday: [data, Timestamp.now()],
+            });
+          }
+        }
+        setIsEdit(false);
+      } else {
+        const studentDocRef = doc(db, "student", student.id);
+        const studentDoc = await getDoc(studentDocRef);
+        const currentData = studentDoc.data()[data];
+        const newValue = (currentData || 0) + 1;
+
+        await updateDoc(studentDocRef, {
+          [data]: newValue,
+        });
+        await addDoc(collection(db, "attendance5"), {
+          name: student.name,
+          thisday: [data, Timestamp.now()],
+        });
+        setIsCheck(true);
+        Alert.alert("Sukses", "Ananda hadir dengan keterangan " + data);
+      }
     } catch (error) {
-      Alert.alert("Error", "Terjadi kesalahan saat input data");
+      Alert.alert(
+        "Error",
+        "Terjadi kesalahan saat input data. Silahkan coba lagi." + error.message
+      );
     }
   };
 
@@ -104,15 +150,19 @@ export default function AbsenScreen() {
     setTimeout(() => {
       checkTodayAttendance();
       setIsLoading(false);
-    }, 2000);
+    }, 1000);
   }, []);
 
+  console.log(isEdit);
   return (
     <SafeAreaView className="flex-1">
       <View className="bg-primaryvariant pt-10">
         <TouchableOpacity
           className="left-5 mb-2"
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            navigation.goBack();
+            setIsEdit(false);
+          }}
         >
           <Image source={require("./image/Arrow 1.png")} />
         </TouchableOpacity>

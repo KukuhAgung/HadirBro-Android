@@ -10,21 +10,17 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-} from "firebase/firestore";
+import { useNavigation } from "@react-navigation/native";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { FIRESTORE_DB } from "./data/FirebaseConfig";
 import { Card } from "../component/Card";
-import { useStudent } from "../store";
+import { useDelete, useStudent } from "../store";
 
 export default function MuridScreen() {
   const [data, setData] = React.useState({});
   const [attendance, setAttendance] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(true);
+  const { isDelete } = useDelete();
   const { student } = useStudent();
   const db = FIRESTORE_DB;
   const navigation = useNavigation();
@@ -41,21 +37,21 @@ export default function MuridScreen() {
       );
       const studentSnapshot = await getDocs(studentQuery);
       const attendanceSnapshot = await getDocs(attendanceQuery);
-      if (!studentSnapshot.empty || !attendanceSnapshot.empty) {
+      if (!studentSnapshot.empty && !attendanceSnapshot.empty) {
         const attendances = [];
         attendanceSnapshot.forEach((doc) => {
           attendances.push({ ...doc.data(), id: doc.id });
         });
+        attendances.sort(
+          (a, b) => b.thisday[1].toDate() - a.thisday[1].toDate()
+        );
         setAttendance(attendances);
         const studentDoc = studentSnapshot.docs[0];
         const studentData = { ...studentDoc.data(), id: studentDoc.id };
         setData(studentData);
-      } else {
-        Alert.alert("Error", "Data siswa tidak ditemukan.");
       }
     } catch (error) {
       Alert.alert("Error", "Gagal untuk mengambil data siswa.");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -83,8 +79,12 @@ export default function MuridScreen() {
   };
 
   React.useEffect(() => {
-    fetchAttendance();
-  }, []);
+    setIsLoading(true);
+    setTimeout(async() => {
+      await fetchAttendance();
+      setIsLoading(false);
+    }, 1000);
+  }, [isDelete]);
 
   return (
     <SafeAreaView className="flex-1">
@@ -129,13 +129,11 @@ export default function MuridScreen() {
       {isLoading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
-        <ScrollView
-          scrollsToTop={true}
-          className="flex-1 gap-y-1 z-1 w-[98%] mx-auto"
-        >
+        <ScrollView scrollsToTop={true} className="flex-1 z-1 w-[98%] mx-auto">
           {attendance.map((item) => (
             <Card
               id={student.id}
+              itemKey={item.id}
               key={item.id}
               color={getStatusColor(item.thisday[0])}
               attendance={item.thisday[0]}

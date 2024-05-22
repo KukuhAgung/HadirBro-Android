@@ -7,12 +7,12 @@ import {
   TouchableOpacity,
   TextInput,
   KeyboardAvoidingView,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { FIREBASE_AUTH } from "./data/FirebaseConfig";
 import { signInWithEmailAndPassword } from "firebase/auth/cordova";
-import { onAuthStateChanged } from "firebase/auth";
 
 export default function LoginScreen() {
   const [email, setEmail] = React.useState("");
@@ -24,19 +24,25 @@ export default function LoginScreen() {
 
   const SignIn = async () => {
     try {
-      const response = await signInWithEmailAndPassword(auth, email, password);
-      alert("sign in success");
+      await signInWithEmailAndPassword(auth, email, password);
+      Alert.alert("Sukses", "Login berhasil, selamat datang kembali!");
       setEmailError(false);
       setPasswordError(false);
       navigation.navigate("Home");
     } catch (error) {
-      alert("sign in failed" + error.message);
-      if (email != user.email) {
-        setEmailError(true);
-        setPasswordError;
-      } else if (password != user.password) {
-        setPasswordError(true);
-        setEmailError(false);
+      switch (error.code) {
+        case "auth/invalid-email":
+          setEmailError(true);
+          break;
+        case "auth/missing-password":
+          setPasswordError(true);
+          break;
+        default:
+          Alert.alert(
+            error.code,
+            "Login gagal, silahkan cek email dan password anda."
+          );
+          break;
       }
     }
   };
